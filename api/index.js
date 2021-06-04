@@ -38,20 +38,17 @@ var r = express.Router();
 		
 	
 	bot.on('message', (msg) => {
-		if(state == 1){
-		    s = msg.text.split("|");
-            i = parseFloat(s[0])
-            r = parseFloat(s[1])
-            
-		    model.predict(
-                [
-                    i, // string float
-                    r
-                ]
-            ).then((jres1)=>{
+            if(state == 1){
+	    s = msg.text.split("|");
+	    model.predict(
+	            [
+	                parseFloat(s[0]), // string to float
+	                parseFloat(s[1])
+	            ]
+	        ).then((jres1)=>{
                 console.log(jres1);
             
-                cls_model.classify([i, r, parseFloat(jres1[0]), parseFloat(jres1[1])]).then((jres2) =>{
+                cls_model.classify([parseFloat(s[0]),parseFloat(s[1]), parseFloat(jres1[0]),parseFloat(jres1[1])]).then((jres2) =>{
                 bot.sendMessage(
 	                msg.chat.id,
 	                `nilai v yang diprediksi adalah ${jres1[0]} volt`
@@ -64,9 +61,15 @@ var r = express.Router();
 	                        msg.chat.id,
 	                        `Klasifikasi Tegangan ${jres2}`
 	                );
+			state = 0;
 		     })
 	        })
 		}else{
+		     bot.sendMessage(
+                     msg.chat.id,
+                        `Please Click /start`
+		     );
+
 		    state = 0;
 		}
 	})
@@ -96,12 +99,12 @@ var r = express.Router();
 		        cls_model.classify(
 	                [
 	                   parseFloat(req.params.i), // string to float
-		               parseFloat(req.params.r),
+		           parseFloat(req.params.r),
 	                   parseFloat(jres[0]),
 	                   parseFloat(jres[1])
 	                ]
 	                ).then((jres_)=>{
-	                    res.json(jres_)
+	                    res.json({jres, jres_})
 	                })
 		    })
 		});	
